@@ -61,7 +61,7 @@ type SIPConfig struct {
 
 type MediaConfig struct {
 	ID       string         `mapstructure:"id"`
-	Type     string         `mapstructure:"type"` // zeromediakit | zms (legacy zlm accepted)
+	Type     string         `mapstructure:"type"` // zms | zero-media-server (legacy: zeromediakit, zlm)
 	IP       string         `mapstructure:"ip"`
 	HTTPPort int            `mapstructure:"http_port"`
 	Secret   string         `mapstructure:"secret"`
@@ -70,10 +70,10 @@ type MediaConfig struct {
 
 func (c MediaConfig) BackendType() string {
 	switch strings.ToLower(strings.TrimSpace(c.Type)) {
-	case "zms", "zeromediakit", "mediakit", "zlm":
-		return "zeromediakit"
+	case "zms", "zero-media-server", "zeromediaserver", "zeromediakit", "mediakit", "zlm":
+		return "zms"
 	default:
-		return "zeromediakit"
+		return "zms"
 	}
 }
 
@@ -102,7 +102,7 @@ func (c MediaConfig) BaseURL() string {
 	return fmt.Sprintf("http://%s:%d", c.IP, c.HTTPPort)
 }
 
-// SignalingBaseURL WebRTC 信令走平台 HTTP（反向代理到 zero-media-kit）。
+// SignalingBaseURL WebRTC 信令走平台 HTTP（反向代理到 zero-media-server）。
 func (c MediaConfig) SignalingBaseURL(serverPort int) string {
 	if serverPort <= 0 {
 		return c.BaseURL()

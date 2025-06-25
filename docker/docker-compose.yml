@@ -1,6 +1,6 @@
 version: '3.8'
 
-# 开发依赖：MySQL + Redis。流媒体请单独部署 zero-media-kit（默认 HTTP :8080）。
+# 开发依赖：MySQL + Redis。流媒体请单独部署 zero-media-server（ZMS，默认 HTTP :8080）。
 services:
   mysql:
     image: mysql:8

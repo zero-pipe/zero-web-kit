@@ -6,7 +6,7 @@
     <el-row :gutter="12">
       <el-col v-for="item in mediaServerList" :key="item.id" :span="getNumberByWidth()">
         <el-card shadow="hover" :body-style="{ padding: '0px'}" class="server-card">
-          <div v-if="item.type === 'zeromediakit' || item.type === 'zms' || item.type === 'zlm'" class="card-img-mediakit" />
+          <div v-if="item.type === 'zms' || item.type === 'zeromediakit' || item.type === 'zlm'" class="card-img-zms" />
           <div v-if="item.type === 'abl'" class="card-img-abl" />
           <div style="padding: 14px;text-align: left">
             <span style="font-size: 16px">{{ item.id }}</span>
@@ -124,9 +124,9 @@ export default {
     position: relative;
     margin-bottom: 20px;
   }
-  .card-img-mediakit{
+  .card-img-zms{
     width: 200px; height: 200px;
-    background: url('../../assets/zero-media-kit-logo.png') no-repeat center;
+    background: url('../../assets/zero-media-server-logo.png') no-repeat center;
     background-position: center;
     background-size: contain;
     margin: 0 auto;

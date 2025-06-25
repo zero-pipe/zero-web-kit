@@ -1,6 +1,6 @@
 # zero-web-kit
 
-国标 GB28181 + ONVIF 设备管理平台。后端 Go 重写，前端 Vue 2 管理台，流媒体对接 **zero-media-kit**。
+国标 GB28181 + ONVIF 设备管理平台。后端 Go 重写，前端 Vue 2 管理台，流媒体对接 **[zero-media-server](https://github.com/zero-pipe/zero-media-server)**（ZMS）。
 
 ## 技术栈
 
@@ -10,7 +10,7 @@
 | 架构 | DDD 分层 |
 | 数据库 | MySQL（兼容历史 `wvp_*` 表结构） |
 | 缓存 | Redis |
-| 流媒体 | [zero-media-kit](https://github.com)（HTTP API + Hook） |
+| 流媒体 | [zero-media-server](https://github.com/zero-pipe/zero-media-server)（ZMS，HTTP API + Hook） |
 | ONVIF | `3rdpart/onvif-go`（本地 vendored） |
 | 前端 | Vue 2 + Element UI |
 
@@ -28,7 +28,7 @@ zero-web-kit/
 ├── internal/
 │   ├── application/         # 应用服务（用例编排）
 │   ├── domain/              # 领域模型与仓储接口
-│   ├── infrastructure/      # DB / Redis / SIP / mediakit / ONVIF
+│   ├── infrastructure/      # DB / Redis / SIP / zero-media-server 客户端 / ONVIF
 │   └── interfaces/          # HTTP API、Hook 回调
 ├── migrations/              # SQL 迁移（历史表名 wvp_*）
 ├── pkg/
@@ -48,7 +48,7 @@ zero-web-kit/
 
 **[docs/DEPLOY.md](docs/DEPLOY.md)**
 
-### 最简流程（Linux + Docker + 本机 media-kit）
+### 最简流程（Linux + Docker + 本机 zero-media-server）
 
 ```bash
 cp configs/config.example.yaml configs/config.yaml   # 改 mysql.password 为 root（若用 compose）
@@ -60,15 +60,17 @@ make frontend-install && make frontend-dev
 
 默认账号：`admin` / `admin`
 
-## 流媒体（zero-media-kit / ZMS）
+## 流媒体（zero-media-server / ZMS）
+
+> **说明**：`zero-media-kit` 是 ZMS 内部的容器/协议库；zero-web-kit 对接的是 **zero-media-server** 产品（HTTP API + Hook），不是 media-kit 库本身。
 
 - 源码目录：与 zero-web-kit 同级的 **`zms/`**，编译产物为 `demo_media_server`
 - 联调配置：`zms/conf/config.zero-web-kit.ini`（Hook → `:18080`，HTTP → `:8080`）
-- 平台配置：`configs/config.yaml` 中 `media.type: zeromediakit`（兼容 `zms` / `zlm`）
+- 平台配置：`configs/config.yaml` 中 `media.type: zms`（兼容 `zeromediakit` / `zlm` 等旧值）
 - 编译与启动详见 [docs/DEPLOY.md](docs/DEPLOY.md) 第九节；ZMS 日志级别见 [zms/README.md](../zms/README.md)
 - WebRTC 信令可由平台反向代理：`/index/api/webrtc`
 
-媒体节点管理页使用 zero-media-kit 品牌图标，已移除 ZLMediaKit 选项。
+媒体节点管理页使用 zero-media-server 品牌图标，已移除 ZLMediaKit 选项。
 
 ## GB28181
 

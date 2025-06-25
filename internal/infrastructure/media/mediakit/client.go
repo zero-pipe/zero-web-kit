@@ -225,7 +225,7 @@ func (c *Client) post(ctx context.Context, api string, params url.Values) (*APIR
 	return &result, nil
 }
 
-// StreamMediaInfo zero-media-kit getMediaInfo 响应。
+// StreamMediaInfo zero-media-server getMediaInfo 响应。
 type StreamMediaInfo struct {
 	Code         int    `json:"code"`
 	Msg          string `json:"msg"`
@@ -326,12 +326,12 @@ func boolStr(v bool) string {
 }
 
 func BuildPlayURLs(mediaIP string, httpPort int, app, stream string) map[string]string {
-	return BuildPlayURLsForBackend("zeromediakit", mediaIP, httpPort, app, stream)
+	return BuildPlayURLsForBackend("zms", mediaIP, httpPort, app, stream)
 }
 
 func BuildPlayURLsForBackend(backend, mediaIP string, httpPort int, app, stream string) map[string]string {
 	base := fmt.Sprintf("http://%s:%d", mediaIP, httpPort)
-	if backend == "zeromediakit" || backend == "zms" {
+	if backend == "zms" || backend == "zeromediakit" || backend == "zeromediaserver" || backend == "zero-media-server" {
 		return map[string]string{
 			"flv":  fmt.Sprintf("%s/%s/%s.flv", base, app, stream),
 			"hls":  fmt.Sprintf("%s/%s/%s.m3u8", base, app, stream),
@@ -377,11 +377,11 @@ func BuildStreamPlayURLs(cfg config.MediaConfig, app, stream string, webrtcPush 
 func BuildGB28181PushURL(sdpIP string, port int, tcpMode int) string {
 	switch tcpMode {
 	case 1:
-		return fmt.Sprintf("tcp://%s:%d (RTP/PS RFC4571, camera -> media-kit listen)", sdpIP, port)
+		return fmt.Sprintf("tcp://%s:%d (RTP/PS RFC4571, camera -> zero-media-server listen)", sdpIP, port)
 	case 2:
-		return fmt.Sprintf("tcp://camera:port (RTP/PS RFC4571, media-kit -> camera after 200 OK)")
+		return fmt.Sprintf("tcp://camera:port (RTP/PS RFC4571, zero-media-server -> camera after 200 OK)")
 	default:
-		return fmt.Sprintf("udp://%s:%d (RTP/PS, camera -> media-kit)", sdpIP, port)
+		return fmt.Sprintf("udp://%s:%d (RTP/PS, camera -> zero-media-server)", sdpIP, port)
 	}
 }
 

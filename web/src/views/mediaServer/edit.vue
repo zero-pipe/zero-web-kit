@@ -23,7 +23,7 @@
           </el-form-item>
           <el-form-item label="类型" prop="type">
             <el-select v-model="mediaServerForm.type" style="float: left; width: 100%">
-              <el-option key="zeromediakit" label="zero-media-kit" value="zeromediakit" />
+              <el-option key="zms" label="zero-media-server" value="zms" />
               <el-option key="abl" label="ABLMediaServer" value="abl" />
             </el-select>
           </el-form-item>
@@ -176,7 +176,7 @@ export default {
         rtpProxyPort: '',
         rtspPort: '',
         rtspSSLPort: '',
-        type: 'zlm'
+        type: 'zms'
       },
       rtpPortRange1: 30000,
       rtpPortRange2: 30500,

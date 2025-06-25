@@ -12,7 +12,7 @@
 | GB28181 SIP | **8116** | UDP/TCP，设备注册/信令 |
 | MySQL | 3306 | 库名 `wvp` |
 | Redis | 6379 | 设备状态、心跳统计等 |
-| zero-media-kit | **8080** | 流媒体 HTTP API（需单独部署） |
+| zero-media-server | **8080** | 流媒体 HTTP API（需单独部署） |
 | 前端开发服 | 9528 | 仅 `npm run dev` 时使用 |
 
 **依赖关系：**
@@ -22,7 +22,7 @@
                 ↓ SIP :8116
             国标 IPC/NVR
                 ↓ RTP
-         zero-media-kit(:8080) ← Hook 回调到 :18080/index/hook/*
+         zero-media-server(:8080) ← Hook 回调到 :18080/index/hook/*
 ```
 
 ---
@@ -38,7 +38,7 @@
 | npm | 随 Node | 前端依赖 |
 | MySQL | 8.x | 业务库 |
 | Redis | 6/7 | 缓存 |
-| zero-media-kit | 与平台联调版本 | 收流/转发/Hook |
+| zero-media-server | 与平台联调版本 | 收流/转发/Hook |
 
 检查命令：
 
@@ -52,7 +52,7 @@ Windows PowerShell 同上。
 
 ### 2.2 可选：Docker
 
-仅用于快速拉起 **MySQL + Redis**（不包含 zero-media-kit）。
+仅用于快速拉起 **MySQL + Redis**（不包含 zero-media-server）。
 
 - Windows： [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - Linux： `docker` + `docker compose`（或 `docker-compose`）
@@ -127,10 +127,10 @@ redis:
   database: 7
 
 media:
-  id: zeromediakit-local
-  type: zeromediakit
-  ip: 127.0.0.1              # zero-media-kit 所在 IP
-  http_port: 8080            # zero-media-kit HTTP 端口
+  id: zms-local
+  type: zms
+  ip: 127.0.0.1              # zero-media-server 所在 IP
+  http_port: 8080            # zero-media-server HTTP 端口
   secret: "与流媒体一致的secret"
 
 sip:
@@ -194,7 +194,7 @@ MySQL 首次启动会自动执行 `migrations/004_*.sql` 与 `002_*.sql`。
    - 或 WSL2 内 `sudo apt install redis-server && redis-server`  
    - 或使用远程 Linux 上 Redis，并修改 `config.yaml` 的 `redis.host`
 
-3. **zero-media-kit**  
+3. **zero-media-server**  
    - 在本机或局域网机器启动，HTTP 默认 `:8080`  
    - 配置 Hook 指向：`http://<平台IP>:18080/index/hook/`
 
@@ -227,7 +227,7 @@ sudo ufw allow 8116/tcp
 sudo ufw allow 8116/udp
 ```
 
-zero-media-kit 单独编译/启动，与 Windows 相同，改 `media.ip` / `media.http_port` 即可。
+zero-media-server 单独编译/启动，与 Windows 相同，改 `media.ip` / `media.http_port` 即可。
 
 ---
 
@@ -363,7 +363,9 @@ make frontend-build
 
 ---
 
-## 九、zero-media-kit（ZMS）编译与对接
+## 九、zero-media-server（ZMS）编译与对接
+
+> `zero-media-kit` 是 ZMS 内部的容器/协议库；zero-web-kit 通过 HTTP API + Hook 对接 **zero-media-server**，不直接依赖 media-kit。
 
 ZMS 源码在 **`../zms`**（与 zero-web-kit 同级目录）。完整功能说明见 [zms/README.md](../zms/README.md)。
 
@@ -479,7 +481,7 @@ Get-Content logs\zero-web-kit.log -Wait -Tail 50
 | 通道 | 通道列表 | 「音频」开关不 404 |
 | 分屏监控 | 业务分组树 | 展开根节点不 404 |
 | 电子地图 | 地图页 | 底图/列表正常，无连续 404 |
-| 点播 | 实时预览 | 有流时 WS-FLV/H265 可播（依赖 media-kit） |
+| 点播 | 实时预览 | 有流时 WS-FLV/H265 可播（依赖 zero-media-server） |
 
 ### 10.6 GB28181（有设备时）
 
@@ -498,7 +500,7 @@ Get-Content logs\zero-web-kit.log -Wait -Tail 50
 | 前端 404 / 网络错误 | 后端是否在 18080；开发模式是否 `npm run dev` |
 | Docker MySQL 连不上 | 密码用 `root`；等待容器 healthy 后再启后端 |
 | 设备注册不上 | 防火墙 8116 UDP/TCP；SIP 域/密码/平台 ID 是否与设备一致 |
-| 有信令无画面 | zero-media-kit 是否运行；Hook 是否指向 18080；RTP 端口是否通 |
+| 有信令无画面 | zero-media-server 是否运行；Hook 是否指向 18080；RTP 端口是否通 |
 | Windows 无 make | 直接用文档中的 `go` / `npm` / `docker compose` 命令 |
 
 ---
