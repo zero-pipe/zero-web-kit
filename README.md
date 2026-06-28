@@ -36,6 +36,7 @@ zero-web-kit/
 │   ├── log/                 # 结构化日志 + 文件轮转
 │   └── response/            # 统一 JSON 响应（兼容原前端）
 ├── resources/               # 静态资源（如 civilCode.csv）
+├── tools/                   # 开发脚本（dev.ps1 / dev.sh 一键启停）
 ├── web/                     # Vue 前端
 ├── logs/                    # 运行时日志（gitignore）
 ├── Makefile
@@ -78,9 +79,68 @@ make frontend-install && make frontend-dev
 
 ## 开发
 
+### 一键启动（推荐）
+
+**默认不需要 Docker**——本机已有 MySQL（:3306）和 Redis（:6379）时，直接：
+
+```powershell
+# Windows
+.\tools\dev.ps1 start
+
+# 先检查依赖是否就绪
+.\tools\dev.ps1 check
+```
+
+```bash
+# Linux / macOS
+./tools/dev.sh start
+./tools/dev.sh check
+```
+
+`config.yaml` 里 `mysql.password` / `redis.password` 需与本机服务一致（可从 `configs/config.example.yaml` 复制）。
+
+**有 Docker 时**（自动拉起 MySQL + Redis 容器）：
+
+```powershell
+.\tools\dev.ps1 start -Docker
+```
+
+```powershell
+.\tools\dev.ps1 stop
+```
+
+```bash
+./tools/dev.sh start --docker
+./tools/dev.sh stop
+```
+
+未装 Docker 却加了 `-Docker` / `--docker` 会明确报错并提示改用本机数据库。
+
+**流媒体联调**（可选）：`-Media` / `--media`（需先编译 `../zms`）
+
+```powershell
+.\tools\dev.ps1 start -Media          # 本机 DB
+.\tools\dev.ps1 start -Docker -Media  # Docker DB + ZMS
+.\tools\dev.ps1 start -Detached       # 后台，不占终端
+.\tools\dev.ps1 stop | status
+```
+
+| 地址 | 说明 |
+|------|------|
+| http://localhost:9528 | 前端（dev 代理 `/dev-api` → 后端） |
+| http://localhost:18080 | Go API |
+| http://localhost:8080 | zero-media-server（`-Media` / `--media`） |
+
+日志：`.dev/logs/`。首次会自动 `npm install`、从 `config.example.yaml` 复制 `config.yaml`。
+
+### 分开启动（传统）
+
 ```bash
 make test
 make build
+make docker-up    # MySQL + Redis
+make run          # 终端 1：后端
+make frontend-dev # 终端 2：前端
 ```
 
 ### 提交前检查

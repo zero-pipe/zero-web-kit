@@ -350,28 +350,16 @@ export default {
       this.dragChannel = null
     },
     play: function (channel) {
-      const loading = this.$loading({
-        lock: true,
-        text: '正在请求视频',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
+      this.$refs.player.openDialog('media', channel.gbId, {
+        pending: true,
+        hasAudio: channel.hasAudio
       })
       this.$store.dispatch('commonChanel/playChannel', channel.gbId)
         .then((data) => {
-          this.$refs.player.openDialog('media', channel.gbId, {
-            streamInfo: data,
-            hasAudio: channel.hasAudio
-          })
+          this.$refs.player.onStreamReady(data, channel.hasAudio)
         })
         .catch((error) => {
-          this.$message({
-            showClose: true,
-            message: error,
-            type: 'error'
-          })
-        })
-        .finally(() => {
-          loading.close()
+          this.$refs.player.onStreamError(error)
         })
     },
     edit: function (channel) {

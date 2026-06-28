@@ -361,7 +361,10 @@ export default {
       const deviceId = this.deviceId
       const channelId = itemData.deviceId
       itemData.playLoading = true
-      console.log('通知设备推流1：' + deviceId + ' : ' + channelId)
+      this.$refs.devicePlayer.openDialog('media', deviceId, channelId, {
+        pending: true,
+        hasAudio: itemData.hasAudio
+      })
       this.$store.dispatch('play/play', [deviceId, channelId])
         .then((data) => {
           setTimeout(() => {
@@ -370,20 +373,14 @@ export default {
             this.getSnapErrorEvent(snapId)
           }, 5000)
           itemData.streamId = data.stream
-          this.$refs.devicePlayer.openDialog('media', deviceId, channelId, {
-            streamInfo: data,
-            hasAudio: itemData.hasAudio
-          })
+          this.$refs.devicePlayer.onStreamReady(data, itemData.hasAudio)
           setTimeout(() => {
             this.initData()
           }, 1000)
         })
         .catch((error) => {
+          this.$refs.devicePlayer.onStreamError(error)
           console.log(error)
-          this.$message.error({
-            showClose: true,
-            message: error
-          })
         })
         .finally(() => {
           itemData.playLoading = false

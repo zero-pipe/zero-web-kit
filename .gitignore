@@ -43,6 +43,7 @@ web/node_modules/.cache/
 # Local env
 .env
 .env.*
+.dev/
 
 # Temporary
 tmp/

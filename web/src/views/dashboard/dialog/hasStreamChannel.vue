@@ -120,12 +120,16 @@ export default {
       const deviceId = row.parentDeviceId
       const channelId = row.deviceId
       this.$set(row, "playing", true)
+      this.$refs.devicePlayer.openDialog("media", deviceId, channelId, {
+        pending: true,
+        hasAudio: row.hasAudio
+      })
       this.$store.dispatch("play/play", [deviceId, channelId])
         .then((data) => {
-          this.$refs.devicePlayer.openDialog("media", deviceId, channelId, {
-            streamInfo: data,
-            hasAudio: row.hasAudio
-          })
+          this.$refs.devicePlayer.onStreamReady(data, row.hasAudio)
+        })
+        .catch((error) => {
+          this.$refs.devicePlayer.onStreamError(error)
         })
         .finally(() => {
           this.$set(row, "playing", false)

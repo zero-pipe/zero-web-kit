@@ -316,23 +316,20 @@ export default {
     // 通知设备上传媒体流
     sendDevicePush: function(itemData) {
       itemData.playLoading = true
+      this.$refs.devicePlayer.openDialog('media', itemData.gbId, {
+        pending: true,
+        hasAudio: itemData.hasAudio
+      })
       this.$store.dispatch('commonChanel/playChannel', itemData.gbId)
         .then((data) => {
           itemData.streamId = data.stream
-          this.$refs.devicePlayer.openDialog('media', itemData.gbId, {
-            streamInfo: data,
-            hasAudio: itemData.hasAudio
-          })
+          this.$refs.devicePlayer.onStreamReady(data, itemData.hasAudio)
           setTimeout(() => {
             this.initData()
           }, 1000)
         })
         .catch((error) => {
-          this.$message({
-            showClose: true,
-            message: error,
-            type: 'error'
-          })
+          this.$refs.devicePlayer.onStreamError(error)
         })
         .finally(() => {
           itemData.playLoading = false

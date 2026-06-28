@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	domainchannel "zero-web-kit/internal/domain/channel"
 	domaindevice "zero-web-kit/internal/domain/device"
@@ -85,10 +84,6 @@ func (s *Service) startPlay(ctx context.Context, device *domaindevice.Device, ch
 	sdp := sipinfra.BuildPlaySDP(device.DeviceID, sdpIP, rtpResp.Port, ssrc, streamMode, "")
 	applog.Debugf("[GB28181 play 3/6] SDP ready ssrc=%s streamMode=%s port=%d", ssrc, streamMode, rtpResp.Port)
 
-	done := make(chan *dto.StreamContent, 1)
-	s.sessions.Store(streamKey(app, stream), done)
-	defer s.sessions.Delete(streamKey(app, stream))
-
 	go func() {
 		applog.Debugf("[GB28181 play 4/6] SIP INVITE -> %s:%d channel=%s Subject SSRC=%s streamMode=%s",
 			device.IP, device.Port, channel.GBDeviceID, ssrc, streamMode)
@@ -105,18 +100,10 @@ func (s *Service) startPlay(ctx context.Context, device *domaindevice.Device, ch
 	}()
 
 	pushURL := mediakit.BuildGB28181PushURL(sdpIP, rtpResp.Port, tcpMode)
-	select {
-	case content := <-done:
-		mediakit.LogPlayStreamPaths("[GB28181 play 6/6] hook OK", app, stream, pushURL, mediakit.BuildPlayURLsFromConfig(s.mediaCfg, app, stream))
-		return content, nil
-	case <-time.After(15 * time.Second):
-		applog.Warnf("[GB28181 play 6/6] hook TIMEOUT 15s (no on_stream_changed), check camera RTP push stream=%s", stream)
-		content := s.buildStreamContent(app, stream)
-		mediakit.LogPlayStreamPaths("[GB28181 play 6/6] timeout (URLs may be stale)", app, stream, pushURL, mediakit.BuildPlayURLsFromConfig(s.mediaCfg, app, stream))
-		return content, nil
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	}
+	content := s.buildStreamContent(app, stream)
+	mediakit.LogPlayStreamPaths("[GB28181 play 6/6] URLs ready (invite async)", app, stream, pushURL,
+		mediakit.BuildPlayURLsFromConfig(s.mediaCfg, app, stream))
+	return content, nil
 }
 
 func (s *Service) StopPlay(deviceID, channelDeviceID string) error {

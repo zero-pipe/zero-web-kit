@@ -333,21 +333,39 @@ cd E:\16_project\zero-web-kit
 
 ### 8.1 开发模式（联调推荐）
 
+**一键启动（单窗口，推荐）：**
+
+```powershell
+# Windows — 本机 MySQL/Redis（无需 Docker）
+cd E:\16_project\zero-web-kit
+.\tools\dev.ps1 start
+.\tools\dev.ps1 check    # 仅探测 :3306 / :6379 / Docker
+
+# 或用 Docker 拉起 MySQL/Redis
+.\tools\dev.ps1 start -Docker
+# ZMS 联调加 -Media
+```
+
 ```bash
-# 第一次
-make frontend-install
-make frontend-dev
+# Linux
+chmod +x tools/dev.sh
+./tools/dev.sh start
+./tools/dev.sh start --docker
+```
+
+浏览器：**http://localhost:9528**；API 代理到 `:18080`。停止：`dev.ps1 stop` / `dev.sh stop`。
+
+**分开两个终端（传统）：**
+
+```bash
+make frontend-install && make frontend-dev   # 终端 2
+make run                                     # 终端 1
 ```
 
 ```powershell
-# Windows 无 make
-cd web
-npm install
-npm run dev
+go run .\cmd\server\ -config configs\config.yaml
+cd web && npm install && npm run dev
 ```
-
-浏览器打开：**http://localhost:9528**  
-API 通过 devServer 代理到 `http://127.0.0.1:18080`。
 
 ### 8.2 生产打包
 

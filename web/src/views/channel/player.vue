@@ -1,5 +1,5 @@
 <template>
-  <div id="devicePlayer" v-loading="isLoging">
+  <div id="devicePlayer">
 
     <el-dialog
       v-if="showVideoDialog"
@@ -14,7 +14,14 @@
       <div class="dhsdk-player-body">
 
         <div class="player-side">
-          <div class="player-container" :style="{ height: playerHeight }">
+          <div
+            class="player-container"
+            :style="{ height: playerHeight }"
+            v-loading="isLoging"
+            element-loading-text="正在邀请设备推流…"
+            element-loading-background="rgba(0, 0, 0, 0.72)"
+          >
+            <div v-if="playError" class="player-error-tip">{{ playError }}</div>
             <playerTabs ref="playerTabs" :has-audio="hasAudio" :show-button="true"
               @playerChanged="playerChanged" />
           </div>
@@ -71,6 +78,7 @@ export default {
       tabActiveName: 'preset',
       hasAudio: false,
       isLoging: false,
+      playError: '',
       showVideoDialog: false,
       streamInfo: null,
       playerHeight: '48vh',
@@ -97,14 +105,34 @@ export default {
       this.mediaServerId = ''
       this.app = ''
       this.videoUrl = ''
+      this.playError = ''
+      this.showVideoDialog = true
+      if (param && param.pending) {
+        this.streamInfo = null
+        this.hasAudio = !!(param.hasAudio)
+        this.isLoging = true
+        return
+      }
       if (param && param.streamInfo) {
         this.play(param.streamInfo, param.hasAudio)
       }
+    },
+    onStreamReady(streamInfo, hasAudio) {
+      if (!this.showVideoDialog) return
+      this.play(streamInfo, hasAudio)
+    },
+    onStreamError(error) {
+      if (!this.showVideoDialog) return
+      this.isLoging = false
+      const msg = typeof error === 'string' ? error : (error && error.message) || '取流失败，请稍后重试'
+      this.playError = msg
+      this.$message({ showClose: true, message: msg, type: 'error' })
     },
     play(streamInfo, hasAudio) {
       this.streamInfo = streamInfo
       this.hasAudio = hasAudio
       this.isLoging = false
+      this.playError = ''
       this.streamId = streamInfo.stream
       this.app = streamInfo.app
       this.mediaServerId = streamInfo.mediaServerId
@@ -122,6 +150,9 @@ export default {
       if (this.$refs.playerTabs) {
         this.$refs.playerTabs.stop()
       }
+      this.isLoging = false
+      this.playError = ''
+      this.streamInfo = null
       this.videoUrl = ''
       this.showVideoDialog = false
     },
@@ -148,7 +179,18 @@ export default {
 #devicePlayer .el-dialog__body { padding: 10px 20px; }
 .dhsdk-player-body { display: flex; gap: 16px; }
 .player-side { flex: 3; min-width: 0; }
-.player-container { width: 100%; }
+.player-container { width: 100%; position: relative; }
+.player-error-tip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  color: #f56c6c;
+  font-size: 14px;
+  text-align: center;
+  padding: 0 12px;
+}
 .control-side { flex: 2; min-width: 340px; display: flex; flex-direction: column; }
 .control-tabs { flex: 1; display: flex; flex-direction: column; min-height: 220px }
 .control-tabs .el-tabs__content { flex: 1; overflow: auto; }
